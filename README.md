@@ -1,3 +1,2 @@
 # Training
-Abcd
-Thffghj
+This is a test sample
