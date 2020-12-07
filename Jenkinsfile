@@ -20,7 +20,7 @@ pipeline {
               
             }
         }
-          stage('Initialize')
+          stage('Setting docker plugin')
         {
             steps {
                 script {
@@ -37,33 +37,54 @@ pipeline {
                 sh 'docker --version'
                  script 
                    { 
+                       try {
                    
-                      dockerImage = docker.build registry + ":$BUILD_NUMBER" 
+                           dockerImage = docker.build registry + ":$BUILD_NUMBER" 
                    }
+                      catch(Exception error)
+                           {
+                               error "Build failed "
+                           }
+                   
             }
+        }
         }
          stage('Push our image') {
             steps {
                 script {
-                    docker.withRegistry( '', registryCredential ) {
+                    try {
+                    
+                        docker.withRegistry( '', registryCredential ) {
                         dockerImage.push()
                     }
                 }
+                    catch(Exception error) {
+                        error "push failed "
+                    }
+                        
             }
         }
+    }
         stage('Pull our image'){
             steps{
                 script{
+                    try {
+            
                     docker.withRegistry( '', registryCredential ) {
                         dockerImage.pull()
                     
                 }
+                    }
+                    catch(Exception error) {
+                        error "pull failed "
+                    }
             }
             sh  'docker images'
         }
     }
         stage('Run Image'){
            steps{
+               
                sh ''' 
                if [ $(docker ps -qf "name=nodejs") ]
                 then
@@ -77,13 +98,11 @@ pipeline {
                 docker ps
                 fi
                '''
+               
+               
            }
        }   
          
     }
 }
         
- 
-    
- 
-
